@@ -410,3 +410,221 @@ button { cursor: pointer; font-family: inherit; }
   .header-top { flex-direction: column; align-items: flex-start; gap: 1rem; }
   .btn-action { opacity: 0.7; }
 }
+
+/* ─── ANIMACIÓN FIFA ─────────────────────────────── */
+
+@keyframes fifaSlideInLeft {
+  from { transform: translateX(-60px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
+@keyframes fifaSlideInRight {
+  from { transform: translateX(60px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes fifaPanelIn {
+  from { transform: scale(0.8) translateY(40px); opacity: 0; }
+  to   { transform: scale(1)   translateY(0);    opacity: 1; }
+}
+
+@keyframes fifaFlash {
+  0%   { opacity: 0.18; }
+  100% { opacity: 0;    }
+}
+
+.fifa-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fifa-flash.activo {
+  animation: fifaFlash 0.15s ease-out forwards;
+}
+
+.fifa-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: background 0.3s ease;
+}
+
+.fifa-overlay.activo {
+  background: rgba(0, 0, 0, 0.88);
+  pointer-events: all;
+}
+
+.fifa-panel {
+  width: min(420px, 90vw);
+  opacity: 0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.fifa-overlay.activo .fifa-panel {
+  animation: fifaPanelIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.fifa-header {
+  background: #1a1a2e;
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fifa-dot-red  { width: 8px; height: 8px; border-radius: 50%; background: #e74c3c; }
+.fifa-dot-green{ width: 8px; height: 8px; border-radius: 50%; background: #27ae60; }
+
+.fifa-header-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.fifa-semana {
+  margin-left: auto;
+  font-size: 12px;
+  color: #f4d03f;
+  font-weight: 500;
+}
+
+.fifa-body {
+  background: #111122;
+  padding: 1.5rem 1rem;
+}
+
+.fifa-change-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow: hidden;
+  margin-bottom: 0.6rem;
+}
+
+.fifa-player-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  opacity: 0;
+}
+
+.fifa-player-card.sale {
+  background: rgba(231, 76, 60, 0.12);
+  border: 0.5px solid rgba(231, 76, 60, 0.3);
+}
+
+.fifa-player-card.entra {
+  background: rgba(39, 174, 96, 0.12);
+  border: 0.5px solid rgba(39, 174, 96, 0.3);
+}
+
+.fifa-overlay.activo .fifa-player-card.sale {
+  animation: fifaSlideInLeft 0.45s 0.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.fifa-overlay.activo .fifa-player-card.entra {
+  animation: fifaSlideInRight 0.45s 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.fifa-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+.fifa-avatar.sale  { background: #c0392b; }
+.fifa-avatar.entra { background: #27ae60; }
+
+.fifa-player-nombre {
+  font-size: 13px;
+  font-weight: 500;
+  color: #eee;
+  line-height: 1.2;
+}
+
+.fifa-player-sub {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+
+.fifa-arrow {
+  width: 32px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s 0.5s ease;
+}
+
+.fifa-overlay.activo .fifa-arrow { opacity: 1; }
+
+.fifa-arrow.down { color: #e74c3c; font-size: 18px; }
+.fifa-arrow.up   { color: #27ae60; font-size: 18px; }
+
+.fifa-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 0.5rem 0;
+}
+
+.fifa-footer {
+  background: #111122;
+  border-top: 0.5px solid rgba(255, 255, 255, 0.06);
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fifa-footer-label {
+  font-size: 11px;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.fifa-btn-cerrar {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 6px;
+  color: #aaa;
+  font-size: 12px;
+  padding: 4px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.fifa-btn-cerrar:hover { background: rgba(255, 255, 255, 0.16); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fifa-overlay.activo .fifa-panel,
+  .fifa-overlay.activo .fifa-player-card.sale,
+  .fifa-overlay.activo .fifa-player-card.entra {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

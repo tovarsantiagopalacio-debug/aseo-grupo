@@ -41,12 +41,9 @@ const getDatesFromISOWeek = (isoWeekStr) => {
 };
 
 /** Función para generar iniciales */
-const obtenerIniciales = (nombreCompleto) => {
-  const partes = nombreCompleto.split(' ').filter(Boolean);
-  if (partes.length >= 2) {
-    return (partes[0][0] + partes[1][0]).toUpperCase();
-  }
-  return partes[0].substring(0, 2).toUpperCase();
+const getInitials = (nombre) => {
+  const partes = nombre.trim().split(/\s+/);
+  return ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase();
 };
 
 /**
@@ -55,7 +52,7 @@ const obtenerIniciales = (nombreCompleto) => {
 const renderMiembro = (nombre, dia, ausentes, reemplazos) => {
   const esAusente = ausentes.includes(nombre);
   const clase = esAusente ? 'absent' : '';
-  const iniciales = obtenerIniciales(nombre);
+  const iniciales = getInitials(nombre);
   
   const avatar = esAusente 
     ? `<div class="avatar"><span class="material-symbols-outlined">close</span></div>`
@@ -187,6 +184,111 @@ const mostrarToast = (mensaje, tipo = 'info') => {
   toast._timer = setTimeout(() => toast.classList.remove('toast--visible'), 4000);
 };
 
+const inyectarOverlayFifa = () => {
+  if (document.getElementById('fifa-overlay')) return;
+
+  const flash = document.createElement('div');
+  flash.id = 'fifa-flash';
+  flash.className = 'fifa-flash';
+
+  const overlay = document.createElement('div');
+  overlay.id = 'fifa-overlay';
+  overlay.className = 'fifa-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', 'Cambio registrado');
+
+  overlay.innerHTML = `
+    <div class="fifa-panel" id="fifa-panel">
+      <div class="fifa-header">
+        <div class="fifa-dot-red"></div>
+        <div class="fifa-dot-green"></div>
+        <span class="fifa-header-label">Cambio registrado</span>
+        <span class="fifa-semana" id="fifa-semana"></span>
+      </div>
+      <div class="fifa-body">
+        <div class="fifa-change-row">
+          <div class="fifa-player-card sale" id="fifa-card-out">
+            <div class="fifa-avatar sale" id="fifa-avatar-out"></div>
+            <div>
+              <div class="fifa-player-nombre" id="fifa-nombre-out"></div>
+              <div class="fifa-player-sub" id="fifa-dia-out"></div>
+            </div>
+          </div>
+          <div class="fifa-arrow down">↓</div>
+        </div>
+        <div class="fifa-divider"></div>
+        <div class="fifa-change-row">
+          <div class="fifa-player-card entra" id="fifa-card-in">
+            <div class="fifa-avatar entra" id="fifa-avatar-in"></div>
+            <div>
+              <div class="fifa-player-nombre" id="fifa-nombre-in"></div>
+              <div class="fifa-player-sub">Entra como reemplazo</div>
+            </div>
+          </div>
+          <div class="fifa-arrow up">↑</div>
+        </div>
+      </div>
+      <div class="fifa-footer">
+        <span class="fifa-footer-label">Grupo ADSO</span>
+        <button class="fifa-btn-cerrar" id="fifa-btn-cerrar">Cerrar ×</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(flash);
+  document.body.appendChild(overlay);
+
+  document.getElementById('fifa-btn-cerrar')
+    .addEventListener('click', cerrarAnimacionFifa);
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) cerrarAnimacionFifa();
+  });
+};
+
+const mostrarAnimacionFifa = (nombreSale, diaSale, nombreEntra, semana) => {
+  if (!nombreEntra) return;
+
+  const overlay = document.getElementById('fifa-overlay');
+  const panel   = document.getElementById('fifa-panel');
+  const flash   = document.getElementById('fifa-flash');
+  if (!overlay) return;
+
+  document.getElementById('fifa-nombre-out').textContent  = nombreSale;
+  document.getElementById('fifa-nombre-in').textContent   = nombreEntra;
+  document.getElementById('fifa-avatar-out').textContent  = getInitials(nombreSale);
+  document.getElementById('fifa-avatar-in').textContent   = getInitials(nombreEntra);
+  document.getElementById('fifa-dia-out').textContent     = `Sale · ${diaSale}`;
+  document.getElementById('fifa-semana').textContent      = semana ?? '';
+
+  const cardOut = document.getElementById('fifa-card-out');
+  const cardIn  = document.getElementById('fifa-card-in');
+
+  cardOut.style.animation = 'none';
+  cardIn.style.animation  = 'none';
+  panel.style.animation   = 'none';
+  panel.style.opacity     = '0';
+
+  flash.classList.remove('activo');
+  void flash.offsetWidth;
+  flash.classList.add('activo');
+
+  requestAnimationFrame(() => {
+    cardOut.style.animation = '';
+    cardIn.style.animation  = '';
+    panel.style.animation   = '';
+    panel.style.opacity     = '';
+    overlay.classList.add('activo');
+  });
+};
+
+const cerrarAnimacionFifa = () => {
+  const overlay = document.getElementById('fifa-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('activo');
+};
+
 /**
  * Adjunta los event listeners de interacción a los botones del DOM renderizado.
  */
@@ -195,6 +297,11 @@ const adjuntarEventos = (contenedor) => {
     btn.addEventListener('click', () => {
       const { nombre, dia } = btn.dataset;
       aseoModule.marcarAusente(nombre, dia);
+      const estadoNuevo = aseoModule.obtenerEstado();
+      const reemplazante = estadoNuevo?.reemplazos?.[dia]?.[nombre];
+      if (reemplazante) {
+        mostrarAnimacionFifa(nombre, dia, reemplazante, estadoNuevo.semana);
+      }
     });
   });
 
@@ -210,6 +317,7 @@ const adjuntarEventos = (contenedor) => {
  * Inicializa las suscripciones del Observer para esta capa de UI.
  */
 const initRender = () => {
+  inyectarOverlayFifa();
   observer.subscribe('estado:actualizado', renderGrupos);
   observer.subscribe('reemplazo:sinCandidatos', ({ dia }) => {
     const config = CONFIG_DIAS[dia] ?? { label: dia };
