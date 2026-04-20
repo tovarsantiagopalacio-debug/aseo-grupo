@@ -1,126 +1,92 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Sistema de gestión de turnos de aseo semanal para un grupo de 22 integrantes. Asignación aleatoria por día, control de ausencias y reemplazos automáticos." />
-  <meta name="theme-color" content="#0d0e14" />
-
-  <title>Aseo Grupo — Gestión de Turnos Semanales</title>
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="Aseo Grupo — Gestión de Turnos" />
-  <meta property="og:description" content="Gestión de turnos de aseo para el grupo de 22 integrantes." />
-  <meta property="og:type" content="website" />
-
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Aseo Grupo - Orchestrator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
+  <nav class="navbar">
+    <div class="container nav-content">
+      <div class="nav-left">
+        <div class="logo">Aseo Grupo</div>
+        <div class="nav-links">
+          <a class="nav-link active" href="#">Semana Actual</a>
+          <a class="nav-link" href="#">Historial</a>
+          <a class="nav-link" href="#">Personal</a>
+          <a class="nav-link" href="#">Configuración</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <button id="btn-reset" class="btn-outline">Resetear Todo</button>
+        <button id="btn-nueva-semana" class="btn-primary">Nueva Distribución</button>
+      </div>
+    </div>
+  </nav>
 
-  <div class="app-wrapper">
-
-    <!-- ─── HEADER ──────────────────────────────────────────── -->
-    <header class="app-header" role="banner">
-      <div class="header-inner">
-
-        <div class="brand">
-          <div class="brand-icon" aria-hidden="true">🧹</div>
-          <div class="brand-text">
-            <h1>Aseo Grupo</h1>
-            <p class="subtitle">Gestión de turnos semanales</p>
+  <main class="main-content">
+    <header>
+      <div class="header-top">
+        <div>
+          <h1 class="title">Orquestador de Turnos</h1>
+          <p id="semana-display" class="subtitle">Cargando...</p>
+        </div>
+        <div class="stats" id="header-stats">
+          <div class="stat-card">
+            <span class="stat-label">Total Personal</span>
+            <span class="stat-value primary">0</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Reemplazos</span>
+            <span class="stat-value tertiary">0</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Ausencias</span>
+            <span class="stat-value error">0</span>
           </div>
         </div>
-
-        <div class="header-actions">
-          <div id="semana-display" aria-live="polite" aria-label="Semana actual">
-            <span class="semana-badge">📅 Cargando…</span>
-          </div>
-
-          <button
-            id="btn-nueva-semana"
-            class="btn btn--primary"
-            type="button"
-            aria-label="Generar nueva distribución aleatoria para esta semana"
-          >
-            🔀 Nueva semana
-          </button>
-
-          <button
-            id="btn-reset"
-            class="btn btn--danger"
-            type="button"
-            aria-label="Reiniciar completamente el estado"
-          >
-            ↺ Reset
-          </button>
-        </div>
-
       </div>
     </header>
 
-    <!-- ─── MAIN ─────────────────────────────────────────────── -->
-    <main class="app-main" id="main-content" role="main">
+    <section id="grupos-container" class="grid-container" aria-live="polite">
+      <!-- Cards rendered here by JS -->
+    </section>
 
-      <!-- Leyenda de estados -->
-      <section class="leyenda" aria-label="Leyenda de estados">
-        <span class="leyenda-titulo">Leyenda</span>
-        <div class="leyenda-item">
-          <span class="leyenda-dot leyenda-dot--activo" aria-hidden="true"></span>
-          <span>Activo — turno asignado</span>
+    <section class="legend">
+      <h3 class="legend-title">Leyenda de Estados</h3>
+      <div class="legend-items">
+        <div class="legend-item">
+          <div class="legend-icon active"></div>
+          <span class="legend-label">Activo / Asignado</span>
         </div>
-        <div class="leyenda-item">
-          <span class="leyenda-dot leyenda-dot--ausente" aria-hidden="true"></span>
-          <span>Ausente — faltante del día</span>
+        <div class="legend-item">
+          <div class="legend-icon absent"><span class="material-symbols-outlined">close</span></div>
+          <span class="legend-label">Ausente</span>
         </div>
-        <div class="leyenda-item">
-          <span class="leyenda-dot leyenda-dot--reemplazo" aria-hidden="true"></span>
-          <span>Reemplazo — cubre la ausencia</span>
-        </div>
-      </section>
-
-      <!-- Estadísticas rápidas -->
-      <div class="stats-bar" id="stats-bar" aria-label="Resumen del estado actual">
-        <div class="stat-chip">
-          👥 <strong>22</strong> integrantes
-        </div>
-        <div class="stat-chip">
-          📆 <strong>5</strong> días activos
+        <div class="legend-item">
+          <div class="legend-icon replacement"><span class="material-symbols-outlined">sync_alt</span></div>
+          <span class="legend-label">Reemplazo Activo</span>
         </div>
       </div>
+    </section>
+  </main>
 
-      <!-- Contenedor de grupos — renderizado dinámicamente por render.js -->
-      <section
-        id="grupos-container"
-        aria-label="Grupos de aseo por día de la semana"
-        aria-live="polite"
-      >
-        <!-- Estado inicial / loading -->
-        <div class="estado-vacio">
-          <div class="estado-vacio-icono">🧹</div>
-          <p>Cargando distribución…</p>
-        </div>
-      </section>
-
-    </main>
-
-    <!-- ─── FOOTER ────────────────────────────────────────────── -->
-    <footer class="app-footer" role="contentinfo">
-      <p>Sistema de Aseo Grupal &mdash; Datos persistidos localmente &bull; Sin conexión requerida</p>
-    </footer>
-
-  </div><!-- /.app-wrapper -->
+  <footer class="footer">
+    <div class="footer-logo">Aseo Grupo</div>
+    <div class="footer-copy">© 2026 Aseo Grupo Orchestrator — Professional Grade Maintenance Tools.</div>
+    <div class="footer-links">
+      <a class="footer-link" href="#">Documentación</a>
+      <a class="footer-link" href="#">Soporte Técnico</a>
+      <a class="footer-link" href="#">Privacidad</a>
+    </div>
+  </footer>
 
   <!-- Toast de notificaciones -->
-  <div
-    id="toast"
-    class="toast"
-    role="status"
-    aria-live="polite"
-    aria-atomic="true"
-  ></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
-  <!-- Entry point del módulo ES6 -->
   <script type="module" src="js/app.js"></script>
-
 </body>
 </html>
